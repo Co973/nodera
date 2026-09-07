@@ -137,8 +137,15 @@ public final class MeshNode implements AutoCloseable {
             for(JsonElement value:array("peers"))peers.add(value.getAsJsonObject().deepCopy());
         }
         peers.sort((a,b)->Boolean.compare(str(b,"id").equals(str(header,"to")),str(a,"id").equals(str(header,"to"))));
+        String recipient=str(header,"to");JsonObject direct=null;for(JsonObject p:peers)if(str(p,"id").equals(recipient)){direct=p;break;}
         IOException failure=null;
-        for(JsonObject p:peers)for(String address:endpoints(p,false)){try{JsonObject result=remote(address,"mesh",obj("envelope",envelope,"ttl",ttl-1));if(result.has("reply")&&!result.get("reply").isJsonNull())return result.getAsJsonObject("reply");}catch(Exception e){failure=new IOException((isBle(address)?"Bluetooth ":"LAN ")+(e.getMessage()==null?"exchange failed":e.getMessage()),e);}}
+        // A known recipient must acknowledge directly before we attempt any relay. This prevents a
+        // stale peer record or a null remote reply from being reported as a generic missing route.
+        if(direct!=null){
+            List<String> directEndpoints=endpoints(direct,false);if(directEndpoints.isEmpty())throw new IOException("Peer has no saved LAN or Bluetooth endpoint. Add them again from Nearby.");
+            for(String address:directEndpoints)try{JsonObject result=remote(address,"mesh",obj("envelope",envelope,"ttl",ttl-1));if(result.has("reply")&&!result.get("reply").isJsonNull())return result.getAsJsonObject("reply");failure=new IOException((isBle(address)?"Bluetooth ":"LAN ")+"peer returned no delivery acknowledgement");}catch(Exception e){failure=new IOException((isBle(address)?"Bluetooth ":"LAN ")+(e.getMessage()==null?"exchange failed":e.getMessage()),e);}
+        }
+        for(JsonObject p:peers){if(p==direct)continue;for(String address:endpoints(p,false)){try{JsonObject result=remote(address,"mesh",obj("envelope",envelope,"ttl",ttl-1));if(result.has("reply")&&!result.get("reply").isJsonNull())return result.getAsJsonObject("reply");}catch(Exception e){failure=new IOException((isBle(address)?"Bluetooth ":"LAN ")+(e.getMessage()==null?"exchange failed":e.getMessage()),e);}}}
         if(failure!=null)throw failure;
         return null;
     }
