@@ -6,6 +6,8 @@ Nodera is an Android-first experimental local messaging app. It is built around 
 
 The signed preview APK is available from the project website. It supports Android 12 and newer. The installed app may still appear as **Mesh** while the app name catches up with Nodera.
 
+Read the [Android user guide](docs/android-user-guide.md) for installation, creating your identity, connecting with someone, fingerprint checks, and troubleshooting.
+
 ## Build from source
 
 Open `android/` in Android Studio, install SDK Platform 35 and Build Tools 35.0.0, then use JDK 17 and Gradle 8.11.1. With Gradle installed, run:
