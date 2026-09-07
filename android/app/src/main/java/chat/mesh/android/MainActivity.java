@@ -20,7 +20,7 @@ public final class MainActivity extends Activity {
     private ValueCallback<Uri[]> fileCallback;private byte[] pendingExport;private String localUrl;
     private final java.util.concurrent.ExecutorService background=Executors.newSingleThreadExecutor();
     private final ServiceConnection connection=new ServiceConnection(){
-        @Override public void onServiceConnected(ComponentName name,IBinder binder){service=((MeshService.LocalBinder)binder).service();if(service.error!=null){status.setText(service.error);return;}localUrl=service.http.url();web.loadUrl(localUrl);if(bluetoothAllowed()){service.bluetooth.startListening();status.setText("LAN ready · Bluetooth listening");}else status.setText("LAN ready · Bluetooth off");}
+        @Override public void onServiceConnected(ComponentName name,IBinder binder){service=((MeshService.LocalBinder)binder).service();if(service.error!=null){status.setText(service.error);return;}localUrl=service.http.url();web.loadUrl(localUrl);if(bluetoothAllowed()){service.bluetooth.startListening(new BleMeshTransport.Listener(){@Override public void peer(String address){}@Override public void status(String value){status.setText("LAN ready · "+value);}});status.setText("LAN ready · starting Bluetooth");}else status.setText("LAN ready · Bluetooth off");}
         @Override public void onServiceDisconnected(ComponentName name){service=null;status.setText("Node stopped. Reopen Nodera to restart.");}
     };
     @Override public void onCreate(Bundle saved){

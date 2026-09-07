@@ -1,14 +1,15 @@
 package chat.mesh.core;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /** One bounded RPC per connection; ordered ATT writes/reads carry a 7-byte frame header. */
 public final class BleFrames {
-    public static final int MAX=32768,HEADER=7;
+    public static final int MAX=32768,HEADER=7,MAX_CHARACTERISTIC=512;
     public static byte[] frame(byte[] value,int offset,int sequence,int mtu){
         if(value.length<1||value.length>MAX||offset<0||offset>=value.length||sequence<0||sequence>65535||mtu<23)throw new IllegalArgumentException("Invalid BLE frame");
-        int count=Math.min(mtu-3-HEADER,value.length-offset);
+        int budget=Math.min(mtu-3,MAX_CHARACTERISTIC);
+        if(budget<=HEADER)throw new IllegalArgumentException("BLE MTU is too small");
+        int count=Math.min(budget-HEADER,value.length-offset);
         return ByteBuffer.allocate(HEADER+count).put((byte)1).putInt(value.length).putShort((short)sequence).put(value,offset,count).array();
     }
     public static final class Receiver {

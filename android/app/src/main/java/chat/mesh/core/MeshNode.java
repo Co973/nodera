@@ -37,6 +37,23 @@ public final class MeshNode implements AutoCloseable {
     }
     private JsonObject peer(String id){for(JsonElement v:array("peers")){JsonObject p=v.getAsJsonObject();if(str(p,"id").equals(id))return p;}throw new SecurityException("Add this peer before exchanging messages");}
     private JsonObject file(String hash,String peer,String direction){for(JsonElement v:array("files")){JsonObject f=v.getAsJsonObject();if(str(f,"hash").equals(hash)&&str(f,"peer").equals(peer)&&str(f,"direction").equals(direction))return f;}return null;}
+    private static boolean isBle(String address){return address!=null&&address.startsWith("ble://");}
+    /** Reads both new endpoint fields and the address used by preview vaults. */
+    private static String endpoint(JsonObject peer,boolean bluetooth){
+        String key=bluetooth?"bleAddress":"lanAddress";
+        if(peer.has(key)&&!peer.get(key).isJsonNull())return str(peer,key);
+        String legacy=peer.has("address")?str(peer,"address"):null;
+        return legacy!=null&&isBle(legacy)==bluetooth?legacy:null;
+    }
+    private static void setEndpoint(JsonObject peer,String address){
+        peer.addProperty(isBle(address)?"bleAddress":"lanAddress",address);
+        // Keep this field for old UI/vault compatibility, preferring LAN for media actions.
+        String lan=endpoint(peer,false),ble=endpoint(peer,true);peer.addProperty("address",lan!=null?lan:ble);
+    }
+    private static List<String> endpoints(JsonObject peer,boolean media){
+        List<String> result=new ArrayList<>();String lan=endpoint(peer,false),ble=endpoint(peer,true);
+        if(lan!=null)result.add(lan);if(!media&&ble!=null)result.add(ble);return result;
+    }
     public static String normalize(String input)throws Exception{
         if(input.matches("ble://([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}"))return "ble://"+input.substring(6).toUpperCase(Locale.ROOT);
         URI u=new URI(input.contains("://")?input:"http://"+input);String h=u.getHost();
@@ -65,11 +82,11 @@ public final class MeshNode implements AutoCloseable {
             if(str(p,"id").equals(str(card(identity()),"id")))throw new IllegalArgumentException("Cannot add yourself");
             for(JsonElement v:array("peers")){
                 JsonObject existing=v.getAsJsonObject();
-                if(str(existing,"address").equals(address)&&!str(existing,"id").equals(str(p,"id")))throw new SecurityException("Identity changed at this address");
-                if(str(existing,"id").equals(str(p,"id"))){if(!str(existing,"exchange").equals(str(p,"exchange")))throw new SecurityException("Pinned key changed");existing.addProperty("address",address);vault.save();retry();return;}
+                for(String known:endpoints(existing,false))if(known.equals(address)&&!str(existing,"id").equals(str(p,"id")))throw new SecurityException("Identity changed at this address");
+                if(str(existing,"id").equals(str(p,"id"))){if(!str(existing,"exchange").equals(str(p,"exchange")))throw new SecurityException("Pinned key changed");setEndpoint(existing,address);vault.save();retry();return;}
             }
             if(array("peers").size()>=100)throw new IllegalStateException("Peer limit reached");
-            p.addProperty("address",address);p.addProperty("verified",false);array("peers").add(p);vault.save();
+            setEndpoint(p,address);p.addProperty("verified",false);array("peers").add(p);vault.save();
         }
         retry();
     }
@@ -80,7 +97,7 @@ public final class MeshNode implements AutoCloseable {
         JsonObject envelope=queue(peer(id),obj("kind","text","text",message));array("messages").add(obj("id",str(envelope,"id"),"peer",id,"text",message,"direction","out","status","queued","time",System.currentTimeMillis()));vault.save();retry();
     }
     public synchronized void offer(String id,String name,byte[] data)throws Exception{
-        requireUnlocked();JsonObject p=peer(id);if(str(p,"address").startsWith("ble://"))throw new IllegalArgumentException("Add this peer's LAN address to share files. Bluetooth carries text only in this build.");
+        requireUnlocked();JsonObject p=peer(id);if(endpoint(p,false)==null)throw new IllegalArgumentException("Add this peer's LAN address to share files. Bluetooth carries text only in this build.");
         if(name.length()>200||data.length==0||data.length>MAX_FILE)throw new IllegalArgumentException("Choose a file between 1 byte and 25 MB");checkQuota(data.length);
         String h=hash(data);int chunks=(data.length+CHUNK-1)/CHUNK;JsonArray have=new JsonArray();
         for(int i=0;i<chunks;i++){vault.writeBlob(h,i,Arrays.copyOfRange(data,i*CHUNK,Math.min(data.length,(i+1)*CHUNK)));have.add(i);}
@@ -120,7 +137,9 @@ public final class MeshNode implements AutoCloseable {
             for(JsonElement value:array("peers"))peers.add(value.getAsJsonObject().deepCopy());
         }
         peers.sort((a,b)->Boolean.compare(str(b,"id").equals(str(header,"to")),str(a,"id").equals(str(header,"to"))));
-        for(JsonObject p:peers){try{JsonObject result=remote(str(p,"address"),"mesh",obj("envelope",envelope,"ttl",ttl-1));if(result.has("reply")&&!result.get("reply").isJsonNull())return result.getAsJsonObject("reply");}catch(Exception ignored){}}
+        IOException failure=null;
+        for(JsonObject p:peers)for(String address:endpoints(p,false)){try{JsonObject result=remote(address,"mesh",obj("envelope",envelope,"ttl",ttl-1));if(result.has("reply")&&!result.get("reply").isJsonNull())return result.getAsJsonObject("reply");}catch(Exception e){failure=new IOException((isBle(address)?"Bluetooth ":"LAN ")+(e.getMessage()==null?"exchange failed":e.getMessage()),e);}}
+        if(failure!=null)throw failure;
         return null;
     }
     private void retry(){if(!closed)workers.execute(()->{try{flush();}catch(Exception ignored){}});}
@@ -153,11 +172,11 @@ public final class MeshNode implements AutoCloseable {
         String h=str(f,"hash"),peerId=str(f,"peer");
         try{
             JsonObject p; synchronized(this){p=peer(peerId).deepCopy();}
-            if(str(p,"address").startsWith("ble://"))throw new IOException("Use the peer's LAN address for file transfers");
+            String lan=endpoint(p,false);if(lan==null)throw new IOException("Use the peer's LAN address for file transfers");
             for(int i=0;i<f.get("chunks").getAsInt();i++){
                 JsonObject request;
                 synchronized(this){if(closed||!str(f,"status").equals("transferring"))return;if(f.getAsJsonArray("have").contains(new JsonPrimitive(i)))continue;request=seal(identity(),p,obj("kind","chunk-request","hash",h,"index",i));}
-                JsonObject response=remote(str(p,"address"),"mesh",obj("envelope",request,"ttl",0)).getAsJsonObject("reply");
+                JsonObject response=remote(lan,"mesh",obj("envelope",request,"ttl",0)).getAsJsonObject("reply");
                 synchronized(this){
                     JsonObject from=response.getAsJsonObject("from");if(!str(from,"id").equals(peerId)||!str(from,"exchange").equals(str(p,"exchange")))throw new SecurityException("Invalid file sender");
                     JsonObject part=open(identity(),response);if(!str(part,"kind").equals("chunk")||!str(part,"request").equals(str(request,"id"))||!str(part,"hash").equals(h)||part.get("index").getAsInt()!=i)throw new SecurityException("Invalid chunk response");
