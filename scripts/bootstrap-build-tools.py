@@ -35,7 +35,6 @@ def unpack(path, destination, strip=False):
 jobs = [
     ('android-platform.zip','https://dl.google.com/android/repository/platform-35_r02.zip','0bb560a90a7a2cbd0dd8348224d518b638fe7949','sha1',TOOLS/'android-sdk/platforms/android-35',True),
     ('android-build-tools.zip','https://dl.google.com/android/repository/build-tools_r35_windows.zip','af059bb67cf7786f45ee0db85e2d24985df1b4b6','sha1',TOOLS/'android-sdk/build-tools/35.0.0',True),
-    ('wix314-binaries.zip','https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip',None,'sha256',TOOLS/'wix',False),
 ]
 def run(job):
     name,url,digest,algorithm,destination,strip=job

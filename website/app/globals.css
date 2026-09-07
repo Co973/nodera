@@ -305,7 +305,7 @@ h2 {
 }
 .platforms {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 620px);
   gap: 22px;
 }
 .platform {

@@ -14,7 +14,7 @@ The static public output is `dist/client`. No application server, database, Orac
 
 ## Cloudflare Pages: upload the built ZIP
 
-Use `../dist/Nodera-website-cloudflare.zip` for a new Pages Direct Upload project. In Cloudflare, open Workers & Pages, create a Pages application, choose Direct Upload / drag and drop, upload the ZIP, and deploy. For an existing Direct Upload project, choose Create a new deployment. Add your domain through the Pages project's Custom domains screen after deployment.
+Use `../dist/Nodera-android-site.zip` for a new Pages Direct Upload project. In Cloudflare, open Workers & Pages, create a Pages application, choose Direct Upload / drag and drop, upload the ZIP, and deploy. For an existing Direct Upload project, choose Create a new deployment. Add your domain through the Pages project's Custom domains screen after deployment.
 
 Do not upload the parent project: it contains local app data and private signing tools. Upload only the website ZIP or `dist/client`.
 
@@ -32,7 +32,7 @@ Official instructions: https://developers.cloudflare.com/pages/get-started/direc
 
 Replace `public/downloads/Nodera-0.2.0-preview.apk` with the intended signed build, update its filename/version and size in `app/page.tsx`, and regenerate `public/downloads/SHA256SUMS.txt`. Then rebuild and redeploy. Never publish the signing keys.
 
-The existing APK displays the older Mesh name. The Windows card links to the portable ZIP on GitHub, pinned to its published commit. The ZIP is too large for an individual Cloudflare Pages asset. Windows v0.2.1 fixes the stale bundled server and case-duplicate environment issue. Both extracted-package startup checks pass; a completed MSI is not available. The site does not claim device validation or audited encryption.
+The existing APK displays the older Mesh name. The site does not claim device validation or audited encryption.
 
 ## Validation
 

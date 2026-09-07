@@ -3,7 +3,6 @@ import {
   ArrowUpRight,
   Radio,
   Smartphone,
-  Monitor,
   Code2,
   Fingerprint,
   Wifi,
@@ -119,7 +118,7 @@ export default function Home() {
           <div className="section-heading">
             <div>
               <p className="eyebrow">01 / GET THE APP</p>
-              <h2 id="download-title">Start with a preview.</h2>
+              <h2 id="download-title">Get the Android preview.</h2>
             </div>
             <p>
               A small project, taking its first steps.
@@ -157,41 +156,6 @@ export default function Home() {
               <p className="small">
                 The app may appear as “Mesh” on your device. This build predates
                 the Nodera name.
-              </p>
-            </article>
-            <article className="platform windows">
-              <div className="platform-heading">
-                <Monitor size={29} />
-                <span className="badge muted">PORTABLE PREVIEW</span>
-              </div>
-              <h3>Windows</h3>
-              <p>A desktop companion for your local network.</p>
-              <div className="release-meta">
-                <span>v0.2.1 preview</span>
-                <span>Windows x64</span>
-                <span>36 MB</span>
-              </div>
-              <a
-                className="button primary"
-                href="https://raw.githubusercontent.com/Co973/nodera/e1abf512e7412e97b36eadab6d60e661172fc286/dist/windows/Nodera-0.2.1-x64-portable.zip"
-              >
-                Download Windows ZIP <ArrowDown size={20} />
-              </a>
-              <a
-                className="quiet-link"
-                href="/downloads/WINDOWS-SHA256SUMS.txt"
-                download
-              >
-                Download SHA-256 checksum <ArrowUpRight size={14} />
-              </a>
-              <a className="quiet-link" href={repo}>
-                Explore the desktop source <ArrowUpRight size={14} />
-              </a>
-              <p className="small">
-                Extract the entire ZIP, then open Mesh.exe. Version 0.2.1 fixes
-                the startup timeout and passes the packaged startup check. Your
-                existing local data is preserved. An MSI is still in
-                development.
               </p>
             </article>
           </div>

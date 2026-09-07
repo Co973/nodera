@@ -31,7 +31,7 @@ run([BT/'aapt2.exe','compile','--dir',ROOT/'android/app/src/main/res','-o',BUILD
 run([BT/'aapt2.exe','link','-I',ANDROID,'--manifest',BUILD/'AndroidManifest.xml','--java',BUILD/'generated','--min-sdk-version','31','--target-sdk-version','35','--version-code','2','--version-name','0.2.0-preview','-A',ROOT/'public','-o',BUILD/'unsigned.apk',BUILD/'resources.zip'])
 sources=list((ROOT/'android/app/src/main/java').rglob('*.java'))+list((BUILD/'generated').rglob('*.java'))
 args=['-encoding','UTF-8','--release','17','-cp',os.pathsep.join(str(p) for p in [ANDROID,*libraries]),'-d',str(BUILD/'classes')]+[str(p) for p in sources]
-# javac's argument file avoids the Windows command line size limit.
+# javac's argument file avoids shell command-line size limits.
 (BUILD/'javac.args').write_text('\n'.join('"'+a.replace('\\','/')+'"' for a in args),encoding='utf-8')
 try: run(['javac','@'+str(BUILD/'javac.args')])
 except subprocess.CalledProcessError:

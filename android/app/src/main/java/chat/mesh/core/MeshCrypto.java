@@ -13,7 +13,7 @@ import java.security.SecureRandom;
 import java.util.*;
 import static chat.mesh.core.Json.*;
 
-/** Interoperability implementation of the experimental desktop sealed-envelope protocol. */
+/** Interoperability implementation of the experimental sealed-envelope protocol. */
 public final class MeshCrypto {
     private static final SecureRandom RANDOM=new SecureRandom();
     public static byte[] bytes(String s){return s.getBytes(StandardCharsets.UTF_8);}
