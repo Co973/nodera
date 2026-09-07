@@ -255,7 +255,7 @@ function render() {
       el(
         "small",
         "",
-        `${new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${m.direction === "out" ? m.status : "received"}`,
+        `${new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${m.direction === "out" ? m.status + (m.error ? ` — ${m.error}` : "") : "received"}`,
       ),
     );
     container.append(item);

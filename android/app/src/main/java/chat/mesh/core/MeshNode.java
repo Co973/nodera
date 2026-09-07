@@ -53,7 +53,7 @@ public final class MeshNode implements AutoCloseable {
         HttpURLConnection c=(HttpURLConnection)new URL(address+"/"+method).openConnection();c.setConnectTimeout(5000);c.setReadTimeout(12000);c.setInstanceFollowRedirects(false);
         try{
             if(data!=null){byte[] request=bytes(stringify(data));c.setRequestMethod("POST");c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");c.setFixedLengthStreamingMode(request.length);try(OutputStream out=c.getOutputStream()){out.write(request);}}
-            if(c.getResponseCode()!=200)throw new IOException("Peer unavailable or request rejected");
+            int responseCode=c.getResponseCode();if(responseCode!=200){String detail="";InputStream error=c.getErrorStream();if(error!=null)try{JsonObject body=object(text(readLimited(error,64*1024)));if(body.has("error"))detail=str(body,"error");}catch(Exception ignored){}throw new IOException(detail.isEmpty()?"Peer unavailable or request rejected":detail);}
             try(InputStream in=c.getInputStream()){return object(text(readLimited(in,1024*1024)));}
         }finally{c.disconnect();}
     }
@@ -129,14 +129,15 @@ public final class MeshNode implements AutoCloseable {
         try{for(JsonObject item:pending){if(closed)return;JsonObject envelope=item.getAsJsonObject("envelope");String id=str(envelope,"id");
             if(envelope.get("expires").getAsLong()<System.currentTimeMillis()){synchronized(this){array("outbox").remove(item);messageStatus(id,"expired");vault.save();}continue;}
             try{
-                synchronized(this){relayed.remove(id);}JsonObject reply=route(envelope,7,false);if(reply==null)continue;
-                synchronized(this){JsonObject p=peer(str(envelope,"to")),from=reply.getAsJsonObject("from");if(!str(p,"id").equals(str(from,"id"))||!str(p,"exchange").equals(str(from,"exchange")))continue;
-                    JsonObject ack=open(identity(),reply);if(!str(ack,"kind").equals("ack")||!str(ack,"packet").equals(id))continue;
+                synchronized(this){relayed.remove(id);}JsonObject reply=route(envelope,7,false);if(reply==null){synchronized(this){messageStatus(id,"waiting","No route to this peer yet");vault.save();}continue;}
+                synchronized(this){JsonObject p=peer(str(envelope,"to")),from=reply.getAsJsonObject("from");if(!str(p,"id").equals(str(from,"id"))||!str(p,"exchange").equals(str(from,"exchange"))){messageStatus(id,"waiting","Reply came from an unexpected peer");vault.save();continue;}
+                    JsonObject ack=open(identity(),reply);if(!str(ack,"kind").equals("ack")||!str(ack,"packet").equals(id)){messageStatus(id,"waiting","Peer did not confirm delivery");continue;}
                     array("outbox").remove(item);messageStatus(id,"delivered");vault.save();}
-            }catch(Exception ignored){}
+            }catch(Exception e){synchronized(this){messageStatus(id,"waiting",e.getMessage()==null?"Connection failed":e.getMessage());try{vault.save();}catch(Exception ignored){}}}
         }}finally{synchronized(this){flushing=false;}}
     }
-    private void messageStatus(String id,String status){for(JsonElement v:array("messages")){JsonObject m=v.getAsJsonObject();if(str(m,"id").equals(id))m.addProperty("status",status);}}
+    private synchronized void messageStatus(String id,String status){messageStatus(id,status,null);}
+    private synchronized void messageStatus(String id,String status,String error){for(JsonElement v:array("messages")){JsonObject m=v.getAsJsonObject();if(str(m,"id").equals(id)){m.addProperty("status",status);if(error==null)m.remove("error");else m.addProperty("error",error);}}}
     public synchronized byte[] transfer(String peerId,String hash,String action)throws Exception{
         requireUnlocked();JsonObject f=file(hash,peerId,"in");if(f==null)throw new IllegalArgumentException("Unknown transfer");
         if(action.equals("save")){if(!str(f,"status").equals("complete"))throw new IllegalStateException("File is incomplete");return assemble(f);}
