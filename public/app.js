@@ -156,7 +156,20 @@ async function transfer(f, action) {
         body: JSON.stringify({ hash: f.hash, peer: f.peer, action }),
       });
       if (!r.ok) throw Error((await r.json()).error);
-      const url = URL.createObjectURL(await r.blob());
+      const blob = await r.blob();
+      // Android WebView does not reliably handle a synthetic anchor download. Its native
+      // bridge opens a Storage Access Framework destination and writes the exact bytes there.
+      if (window.NoderaAndroid?.saveFile) {
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        window.NoderaAndroid.saveFile(f.name, dataUrl.split(",", 2)[1]);
+        return;
+      }
+      const url = URL.createObjectURL(blob);
       const a = el("a");
       a.href = url;
       a.download = f.name;
@@ -214,7 +227,7 @@ function render() {
   $("#chat-name").textContent = p.name;
   $("#chat-avatar").textContent = p.name[0]?.toUpperCase() || "?";
   $("#chat-subtitle").textContent = p.verified
-    ? "Fingerprint verified · LAN mesh"
+    ? "Fingerprint verified · LAN connection"
     : "First contact · Compare fingerprints to verify";
   const messages = state.messages.filter((m) => m.peer === selected),
     files = state.files.filter((f) => f.peer === selected);

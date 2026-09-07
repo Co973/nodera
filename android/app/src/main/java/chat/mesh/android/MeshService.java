@@ -12,10 +12,10 @@ public final class MeshService extends Service {
     @Override public void onCreate(){
         super.onCreate();
         NotificationManager manager=getSystemService(NotificationManager.class);
-        manager.createNotificationChannel(new NotificationChannel("mesh-node","Mesh node",NotificationManager.IMPORTANCE_LOW));
+        manager.createNotificationChannel(new NotificationChannel("mesh-node","Nodera node",NotificationManager.IMPORTANCE_LOW));
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent stop=PendingIntent.getService(this,1,new Intent(this,MeshService.class).setAction("STOP"),PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-        Notification notification=new Notification.Builder(this,"mesh-node").setSmallIcon(chat.mesh.android.R.drawable.ic_mesh).setContentTitle("Mesh node is running").setContentText("Local messaging stays active. Tap Stop to lock and disconnect.").setContentIntent(open).addAction(new Notification.Action.Builder(null,"Stop",stop).build()).setOngoing(true).build();
+        Notification notification=new Notification.Builder(this,"mesh-node").setSmallIcon(chat.mesh.android.R.drawable.ic_mesh).setContentTitle("Nodera is running").setContentText("Local messaging stays active. Tap Stop to lock and disconnect.").setContentIntent(open).addAction(new Notification.Action.Builder(null,"Stop",stop).build()).setOngoing(true).build();
         if(Build.VERSION.SDK_INT>=34)startForeground(1,notification,ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);else startForeground(1,notification);
         try{
             node=new MeshNode(getNoBackupFilesDir().toPath());

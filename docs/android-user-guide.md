@@ -6,7 +6,7 @@ Nodera is a local-first messaging preview. It connects people on the same privat
 
 1. Download `Nodera-0.2.0-preview.apk` from the Nodera website on an Android 12 or newer phone.
 2. Open the download. If Android asks, allow your browser or file manager to install unknown apps, then confirm the installation.
-3. Open the app. It may appear as **Mesh** in the launcher while the app name is being updated.
+3. Open the app. It appears as **Nodera** in the launcher.
 
 ## 2. Create your local identity
 
@@ -32,7 +32,7 @@ Both people need Nodera installed and unlocked.
 2. Keep both apps open and use the nearby-device list to select the other phone.
 3. Each person must accept/add the other device and compare fingerprints before trusting the connection.
 
-Keep the Mesh notification running if you want the app to keep receiving messages in the background.
+Keep the Nodera notification running if you want the app to keep receiving messages in the background.
 
 ## 4. Send a message
 

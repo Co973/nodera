@@ -59,7 +59,7 @@ else:
         properties=subprocess.run(['java','-XshowSettings:properties','-version'],capture_output=True,text=True,check=True)
         java_home=Path(re.search(r'java.home = (.+)',properties.stderr).group(1).strip())
         run([java_home/'bin/keytool.exe','-genkeypair','-keystore',store,'-storetype','PKCS12','-storepass:env','MESH_ANDROID_STORE_PASS','-keypass:env','MESH_ANDROID_STORE_PASS','-alias',alias,'-keyalg','RSA','-keysize','3072','-validity','10000','-dname','CN=Mesh Chat Preview'],env=env)
-output=DIST/'Mesh-0.2.0-preview.apk'
+output=DIST/'Nodera-0.2.0-preview.apk'
 run(['java','-jar',BT/'lib/apksigner.jar','sign','--ks',store,'--ks-key-alias',alias,'--ks-pass','env:MESH_ANDROID_STORE_PASS','--out',output,BUILD/'aligned.apk'],env=env)
 run(['java','-jar',BT/'lib/apksigner.jar','verify','--verbose','--print-certs',output])
 digest=hashlib.sha256(output.read_bytes()).hexdigest()

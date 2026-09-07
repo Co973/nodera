@@ -42,7 +42,15 @@ public final class BleMeshTransport implements MeshNode.Radio,AutoCloseable {
             else startAdvertising();
             stopScan();scanner=adapter.getBluetoothLeScanner();if(scanner==null)throw new IOException("BLE scan unavailable");scanning=true;
             scanner.startScan(Collections.singletonList(new ScanFilter.Builder().setServiceUuid(new ParcelUuid(SERVICE)).build()),new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build(),scan);
-            main.postDelayed(scanFinished,30000);status("Scanning for nearby Mesh nodes…");
+            main.postDelayed(scanFinished,30000);status("Scanning for nearby Nodera nodes…");
+        }catch(Exception e){status(e.getMessage()==null?"Bluetooth unavailable":e.getMessage());}
+    }
+    /** Starts the GATT server and advertisement without a scan so a foreground node remains reachable. */
+    public void startListening(){
+        try{
+            if(adapter==null||!adapter.isEnabled())throw new IOException("Bluetooth is disabled");
+            if(server==null){server=manager.openGattServer(context,gattServer);if(server==null)throw new IOException("GATT server unavailable");BluetoothGattService service=new BluetoothGattService(SERVICE,BluetoothGattService.SERVICE_TYPE_PRIMARY);service.addCharacteristic(new BluetoothGattCharacteristic(RX,BluetoothGattCharacteristic.PROPERTY_WRITE,BluetoothGattCharacteristic.PERMISSION_WRITE));service.addCharacteristic(new BluetoothGattCharacteristic(TX,BluetoothGattCharacteristic.PROPERTY_READ,BluetoothGattCharacteristic.PERMISSION_READ));if(!server.addService(service))throw new IOException("Unable to register Bluetooth service");}
+            else startAdvertising();
         }catch(Exception e){status(e.getMessage()==null?"Bluetooth unavailable":e.getMessage());}
     }
     private void startAdvertising(){try{if(advertising)return;advertiser=adapter.getBluetoothLeAdvertiser();if(advertiser==null){status("This device cannot advertise. It can still connect to other nodes.");return;}
@@ -92,7 +100,7 @@ public final class BleMeshTransport implements MeshNode.Radio,AutoCloseable {
         if(gatt==null)throw new IOException("Unable to connect to Bluetooth peer");
         try{
             if(!client.ready.await(12,TimeUnit.SECONDS)||client.status!=BluetoothGatt.GATT_SUCCESS)throw new IOException("Bluetooth peer did not connect");
-            BluetoothGattService service=gatt.getService(SERVICE);if(service==null)throw new IOException("Mesh service unavailable");BluetoothGattCharacteristic rx=service.getCharacteristic(RX),tx=service.getCharacteristic(TX);if(rx==null||tx==null)throw new IOException("Mesh characteristics unavailable");
+            BluetoothGattService service=gatt.getService(SERVICE);if(service==null)throw new IOException("Nodera service unavailable");BluetoothGattCharacteristic rx=service.getCharacteristic(RX),tx=service.getCharacteristic(TX);if(rx==null||tx==null)throw new IOException("Nodera characteristics unavailable");
             int offset=0,sequence=0;long deadline=System.currentTimeMillis()+60000;
             while(offset<request.length){if(System.currentTimeMillis()>deadline)throw new IOException("Bluetooth request timed out");byte[] frame=BleFrames.frame(request,offset,sequence++,client.mtu);client.operation=new CountDownLatch(1);rx.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);rx.setValue(frame);if(!gatt.writeCharacteristic(rx))throw new IOException("Bluetooth write unavailable");client.await();offset+=frame.length-BleFrames.HEADER;}
             BleFrames.Receiver receiver=new BleFrames.Receiver();

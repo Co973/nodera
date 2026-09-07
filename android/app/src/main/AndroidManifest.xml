@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
-    <application android:label="Mesh" android:icon="@drawable/ic_mesh" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:supportsRtl="true" android:usesCleartextTraffic="true">
+    <application android:label="Nodera" android:icon="@drawable/ic_mesh" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:supportsRtl="true" android:usesCleartextTraffic="true">
         <service android:name=".MeshService" android:exported="false" android:foregroundServiceType="connectedDevice" />
         <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden" android:windowSoftInputMode="adjustResize">
             <intent-filter>

@@ -156,10 +156,7 @@ export default function Home() {
               <a className="quiet-link" href={repo + '/blob/main/docs/android-user-guide.md'}>
                 Read the Android setup guide <ArrowUpRight size={14} />
               </a>
-              <p className="small">
-                The app may appear as “Mesh” on your device. This build predates
-                the Nodera name.
-              </p>
+              <p className="small">The app appears as “Nodera” on your device.</p>
             </article>
           </div>
           <aside className="preview-note">

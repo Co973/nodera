@@ -4,7 +4,7 @@ Nodera is an Android-first experimental local messaging app. It is built around 
 
 ## Android preview
 
-The signed preview APK is available from the project website. It supports Android 12 and newer. The installed app may still appear as **Mesh** while the app name catches up with Nodera.
+The signed preview APK is available from the project website. It supports Android 12 and newer and appears as **Nodera** in the launcher.
 
 Read the [Android user guide](docs/android-user-guide.md) for installation, creating your identity, connecting with someone, fingerprint checks, and troubleshooting.
 
