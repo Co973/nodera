@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mesh — Nearby is enough.</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="toast" role="status" hidden></div>
+    <section id="unlock" class="unlock">
+      <div class="brand">
+        <span class="logo">m</span> mesh<span class="tag"
+          >EARLY BUILD / 0.1</span
+        >
+      </div>
+      <div class="intro">
+        <div class="eyebrow">A LITTLE CLOSER. A LOT MORE CONNECTED.</div>
+        <h1>Nearby<br />is enough<span>.</span></h1>
+        <p>
+          A private place to connect, exchange files, and keep a conversation
+          moving. No account. No cloud.
+        </p>
+        <div class="orbit"><span></span><span></span><span></span><b>◎</b></div>
+      </div>
+      <form id="unlock-form">
+        <div class="eyebrow">YOUR LOCAL NODE</div>
+        <h2 id="unlock-title">Make yourself at home.</h2>
+        <p>
+          Your passphrase encrypts your identity and history on this device.
+          Keep it safe: there is no recovery.
+        </p>
+        <label id="name-label"
+          >Display name<input
+            name="name"
+            maxlength="60"
+            value="Explorer"
+            autocomplete="nickname" /></label
+        ><label
+          >Vault passphrase<input
+            name="password"
+            type="password"
+            minlength="12"
+            required
+            autocomplete="current-password"
+            placeholder="At least 12 characters" /></label
+        ><button class="primary" type="submit">
+          Open my node <span>↗</span></button
+        ><small>Experimental LAN build · Bluetooth & Android coming next</small>
+      </form>
+    </section>
+    <div id="app" class="shell" hidden>
+      <aside>
+        <div class="brand"><span class="logo">m</span> mesh</div>
+        <div class="workspace-label">YOUR WORKSPACE <span>01</span></div>
+        <button class="nav active" id="conversation-nav">
+          ◉ <span>Conversations</span><b id="peer-count">0</b>
+        </button>
+        <div class="sidebar-heading">
+          PEOPLE <button id="add-peer" aria-label="Add peer">+</button>
+        </div>
+        <div id="peer-list"></div>
+        <div class="sidebar-bottom">
+          <span class="avatar" id="self-avatar">E</span>
+          <div>
+            <strong id="self-name">Explorer</strong
+            ><small>Local identity</small>
+          </div>
+          <span class="live-dot"></span>
+        </div>
+      </aside>
+      <main>
+        <header>
+          <div>
+            <span class="eyebrow">LOCAL FIRST. HUMAN ALWAYS.</span>
+            <h2>Your corner of the mesh<span>.</span></h2>
+          </div>
+          <span class="pill"><i></i> LAN node active</span>
+        </header>
+        <div class="content">
+          <section class="chat">
+            <div class="chat-heading">
+              <div class="avatar" id="chat-avatar">◎</div>
+              <div>
+                <h3 id="chat-name">Start with someone nearby</h3>
+                <p id="chat-subtitle">Add a peer to open a conversation</p>
+              </div>
+              <button id="fingerprint" class="quiet" hidden>
+                View identity ↗
+              </button>
+            </div>
+            <div id="messages" class="messages">
+              <div class="empty">
+                <div class="empty-icon">⌁</div>
+                <h2>Good things travel<br />person to person.</h2>
+                <p>
+                  Connect another Mesh node on your local network.<br />Your
+                  first conversation starts there.
+                </p>
+                <button id="empty-add" class="primary">
+                  Connect a peer ↗
+                </button>
+              </div>
+            </div>
+            <form id="compose">
+              <button
+                type="button"
+                class="attach"
+                id="attach"
+                aria-label="Share a file"
+              >
+                ＋</button
+              ><input type="file" id="file" hidden /><textarea
+                id="text"
+                rows="1"
+                maxlength="8000"
+                placeholder="Say something…"
+                aria-label="Message"
+                disabled
+              ></textarea
+              ><button
+                id="send"
+                class="send"
+                aria-label="Send message"
+                disabled
+              >
+                ↑
+              </button>
+            </form>
+            <div class="compose-note">
+              Encrypted content · Queued when unreachable · No internet relay
+            </div>
+          </section>
+          <section class="details">
+            <div class="eyebrow">ON THIS DEVICE</div>
+            <h3>A small node.<br />A stronger connection.</h3>
+            <div class="network-art">
+              <div class="ring r1"></div>
+              <div class="ring r2"></div>
+              <div class="ring r3"></div>
+              <span class="node center">m</span><span class="node n1"></span
+              ><span class="node n2"></span><span class="node n3"></span>
+            </div>
+            <div class="metric">
+              <span>Known peers</span><b id="known">0</b>
+            </div>
+            <div class="metric">
+              <span>Waiting to deliver</span><b id="queued">0</b>
+            </div>
+            <div class="divider"></div>
+            <div class="eyebrow">CONNECTION LANES</div>
+            <div class="lane">
+              <span>◉ &nbsp; Local network</span
+              ><small class="green">Available</small>
+            </div>
+            <div class="lane">
+              <span>ᛒ &nbsp; Bluetooth LE</span><small>Planned</small>
+            </div>
+            <div class="lane">
+              <span>⌁ &nbsp; Long-range backup</span><small>Planned</small>
+            </div>
+            <div class="address-card">
+              <div class="eyebrow">YOUR MESH ADDRESS</div>
+              <code id="address"></code>
+              <p>
+                Use this address on another node. Add each other to exchange
+                messages.
+              </p>
+            </div>
+            <p class="experimental">
+              Development preview. Experimental encryption; no forward secrecy.
+              Not an emergency communication service.
+            </p>
+          </section>
+        </div>
+        <footer>
+          <span>OFFLINE BY DESIGN</span><span>Mesh / Desktop preview</span>
+        </footer>
+      </main>
+    </div>
+    <dialog id="peer-dialog">
+      <form id="peer-form">
+        <div class="eyebrow">MAKE A CONNECTION</div>
+        <h2>Add someone nearby.</h2>
+        <p>
+          Enter their mesh address. Both nodes must be on the same LAN and
+          unlocked.
+        </p>
+        <label
+          >Peer address<input
+            id="peer-address"
+            placeholder="192.168.1.8:4311"
+            required
+        /></label>
+        <div class="dialog-actions">
+          <button type="button" id="cancel-peer" class="quiet">Cancel</button
+          ><button class="primary">Connect ↗</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="identity-dialog">
+      <div class="eyebrow">TRUST, PERSON TO PERSON</div>
+      <h2>Compare fingerprints.</h2>
+      <p>
+        Compare these fingerprints in person or over a trusted channel. First
+        contact alone does not verify someone’s identity.
+      </p>
+      <label>Your fingerprint<code id="own-fingerprint"></code></label
+      ><label>Peer fingerprint<code id="peer-fingerprint"></code></label>
+      <div class="dialog-actions">
+        <button class="quiet" id="close-identity">Close</button
+        ><button class="primary" id="verify">I compared — mark verified</button>
+      </div>
+    </dialog>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
